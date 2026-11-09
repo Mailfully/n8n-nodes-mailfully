@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-mailfully.mailfully",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication", "Marketing & Content"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/Mailfully/n8n-nodes-mailfully?tab=readme-ov-file#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/Mailfully/n8n-nodes-mailfully?tab=readme-ov-file"
+			}
+		]
+	}
+}
