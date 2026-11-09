@@ -17,12 +17,23 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Credentials
 
-1. Sign in to the [Mailfully dashboard](https://dashboard.mailfully.com) and create an API key.
-2. In n8n, create a **Mailfully API** credential and paste the key.
+1. Sign in to the [Mailfully dashboard](https://dashboard.mailfully.com) and open **API Keys**.
+2. Create a key with the scopes your workflows use:
+
+   | Scope | Needed for |
+   |---|---|
+   | Send emails | Every Email operation, Domain, Template |
+   | Read emails | Email Get, Get Many and Get Events, for a key that doesn't send |
+   | Read received email | Received Email, and the trigger's Download Attachments option |
+   | Read suppressions | Suppression Get Many |
+   | Manage suppressions | Suppression Create and Delete |
+   | Manage webhooks | Mailfully Trigger |
+
+3. In n8n, create a **Mailfully API** credential and paste the key.
 
 A key that starts with `mf_test_` sends in test mode: the full send path runs, but no mail reaches a real inbox and nothing is billed. Use an `mf_live_` key to send real mail.
 
-The trigger needs a key that can manage webhooks. Keys created by `mailfully login --web` can't, so create one in the dashboard.
+Keys created by `mailfully login --web` can't manage webhooks or suppressions, so create the key in the dashboard.
 
 ## Operations
 
