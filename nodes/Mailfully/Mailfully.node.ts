@@ -13,6 +13,7 @@ import {
 	buildEmailBody,
 	chunk,
 	splitAddresses,
+	toUtcIso,
 	type AttachmentInput,
 	type NameValue,
 } from './shared/send';
@@ -185,15 +186,35 @@ async function getAll(
 	const qs: IDataObject = {};
 	for (const [key, value] of Object.entries(filters)) {
 		if (value === '' || value === false || value === undefined || value === null) continue;
+		if (key === 'from' || key === 'to') {
+			qs[key] = toUtcIso(String(value), this.getTimezone());
+			continue;
+		}
 		qs[key] = value === true ? 'true' : value;
 	}
 	return mailfullyApiRequestAllItems.call(this, path, { qs, cursorParam, limit }, i);
 }
 
-function idempotencyKey(this: IExecuteFunctions, i: number, suffix = `${i}`): string {
+// The API remembers a key for 24 hours across the whole organization, so the
+// default key names the workflow, execution, node, node run and item. Batches
+// add their request number to a custom key, since one custom key would
+// otherwise repeat across requests.
+function idempotencyKey(this: IExecuteFunctions, i: number, batch?: number): string {
 	const fields = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
 	const custom = typeof fields.idempotencyKey === 'string' ? fields.idempotencyKey.trim() : '';
-	return custom !== '' ? custom : `n8n-${this.getExecutionId()}-${suffix}`;
+	const suffix = batch === undefined ? '' : `-batch-${batch}`;
+	if (custom !== '') return `${custom}${suffix}`;
+
+	const runIndex = String(this.evaluateExpression('{{$runIndex}}', i) ?? 0);
+	const parts = [
+		'n8n',
+		this.getWorkflow().id ?? 'workflow',
+		this.getExecutionId(),
+		this.getNode().id,
+		`r${runIndex}`,
+		batch === undefined ? `i${i}` : `b${batch}`,
+	];
+	return parts.join('-');
 }
 
 async function emailBody(this: IExecuteFunctions, i: number): Promise<IDataObject> {
@@ -234,7 +255,7 @@ async function emailBody(this: IExecuteFunctions, i: number): Promise<IDataObjec
 		bcc: fields.bcc as string | undefined,
 		replyTo: fields.replyTo as string | undefined,
 		scheduledAt: fields.scheduledAt
-			? new Date(fields.scheduledAt as string).toISOString()
+			? toUtcIso(String(fields.scheduledAt), this.getTimezone())
 			: undefined,
 		type: fields.type as string | undefined,
 		tags: rows('tags', 'tag'),
@@ -264,7 +285,7 @@ async function sendBatch(
 
 			const first = group[0];
 			const headers = {
-				'Idempotency-Key': idempotencyKey.call(this, first, `batch-${groupIndex}`),
+				'Idempotency-Key': idempotencyKey.call(this, first, groupIndex),
 			};
 			const response = await mailfullyApiRequest.call(
 				this,

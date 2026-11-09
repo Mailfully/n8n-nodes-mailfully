@@ -40,7 +40,7 @@ The From address must be on a domain you have verified in Mailfully. To, CC, BCC
 
 To attach files, put the names of the item's binary properties in **Attachments**, separated by commas (for example `data, invoice`).
 
-Each send carries an idempotency key, built from the execution ID and the item index unless you set your own. If n8n retries a failed step, the email isn't sent twice.
+Each send carries an idempotency key, built from the workflow, execution, node and item, so if n8n retries a failed step, the email isn't sent twice. A custom **Idempotency Key** must be different for every item, for example `{{ $json.orderId }}`. Mailfully remembers keys for 24 hours.
 
 **Get Attachments** downloads each attachment of a received email as a binary property, named `attachment_0`, `attachment_1` and so on.
 

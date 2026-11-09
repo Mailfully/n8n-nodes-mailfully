@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import type { IDataObject } from 'n8n-workflow';
 
 export interface NameValue {
@@ -87,6 +88,14 @@ export function buildEmailBody(input: EmailInput): IDataObject {
 	}
 
 	return body;
+}
+
+// n8n date fields often carry no zone. Read them in the workflow's time zone
+// and send UTC, so the API never guesses.
+export function toUtcIso(value: string, timeZone: string): string {
+	const parsed = DateTime.fromISO(value, { zone: timeZone });
+	if (!parsed.isValid) throw new Error(`"${value}" is not a valid date`);
+	return parsed.toUTC().toISO() as string;
 }
 
 export function chunk<T>(items: T[], size: number): T[][] {

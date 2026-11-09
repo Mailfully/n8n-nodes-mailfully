@@ -85,15 +85,16 @@ export async function mailfullyApiRequest(
 		)) as IDataObject;
 	} catch (error) {
 		const envelope = errorEnvelope(error);
-		throw new NodeApiError(this.getNode(), error as JsonObject, {
-			itemIndex,
-			message: envelope.message
-				? envelope.type
-					? `${envelope.type}: ${envelope.message}`
-					: envelope.message
-				: undefined,
-			description: envelope.param ? `Field: ${envelope.param}` : undefined,
-		});
+		const nodeError = new NodeApiError(this.getNode(), error as JsonObject, { itemIndex });
+		// Set after construction: n8n may hand back an existing NodeApiError
+		// unchanged, which would drop options passed to the constructor.
+		if (envelope.message) {
+			nodeError.message = envelope.type
+				? `${envelope.type}: ${envelope.message}`
+				: envelope.message;
+			nodeError.description = envelope.param ? `Field: ${envelope.param}` : null;
+		}
+		throw nodeError;
 	}
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildEmailBody, chunk, splitAddresses } from '../nodes/Mailfully/shared/send';
+import { buildEmailBody, chunk, splitAddresses, toUtcIso } from '../nodes/Mailfully/shared/send';
 
 describe('splitAddresses', () => {
 	it('splits on commas and trims', () => {
@@ -104,6 +104,22 @@ describe('buildEmailBody', () => {
 		});
 		expect(body).not.toHaveProperty('tags');
 		expect(body).not.toHaveProperty('headers');
+	});
+});
+
+describe('toUtcIso', () => {
+	it('reads a zone-less date in the workflow time zone', () => {
+		expect(toUtcIso('2026-12-01T09:00:00', 'America/New_York')).toBe('2026-12-01T14:00:00.000Z');
+	});
+
+	it('keeps an explicit offset', () => {
+		expect(toUtcIso('2026-12-01T09:00:00+01:00', 'America/New_York')).toBe(
+			'2026-12-01T08:00:00.000Z',
+		);
+	});
+
+	it('refuses a value that is not a date', () => {
+		expect(() => toUtcIso('tomorrow', 'UTC')).toThrow();
 	});
 });
 
