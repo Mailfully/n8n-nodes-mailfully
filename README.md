@@ -26,12 +26,14 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
    | Read emails | Email Get, Get Many and Get Events, for a key that doesn't send |
    | Read received email | Received Email, and the trigger's Download Attachments option |
    | Read suppressions | Suppression Get Many |
-   | Manage suppressions | Suppression Create and Delete |
-   | Manage webhooks | Mailfully Trigger |
+   | Manage suppressions | Suppression Create and Delete (live keys only) |
+   | Manage webhooks | Mailfully Trigger (live keys only) |
 
 3. In n8n, create a **Mailfully API** credential and paste the key.
 
 A key that starts with `mf_test_` sends in test mode: the full send path runs, but no mail reaches a real inbox and nothing is billed. Use an `mf_live_` key to send real mail.
+
+The trigger can only subscribe to events the key can already read: `email.received` needs **Read received email**, and the other events need **Send emails** or **Read emails**.
 
 Keys created by `mailfully login --web` can't manage webhooks or suppressions, so create the key in the dashboard.
 
